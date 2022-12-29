@@ -1,4 +1,4 @@
-use super::{Input, Page, PageError, PasswordManager};
+use super::{Input, NavigationResult, Page, PageResult, PasswordManager};
 use crossterm::event::KeyCode;
 use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -9,9 +9,10 @@ use tui::{
 };
 
 impl PasswordManager {
-    pub fn home_screen<T: tui::backend::Backend>(&self, terminal: &mut Terminal<T>) -> PageError {
-        let menu_titles = vec!["Home", "PasswordList"];
-
+    pub fn home_screen<T: tui::backend::Backend>(
+        &self,
+        terminal: &mut Terminal<T>,
+    ) -> NavigationResult {
         terminal.draw(|rect| {
             let size = rect.size();
             let chunks = Layout::default()
@@ -20,29 +21,7 @@ impl PasswordManager {
                 .constraints([Constraint::Length(3), Constraint::Min(2)].as_ref())
                 .split(size);
 
-            let menu = menu_titles
-                .iter()
-                .map(|t| {
-                    let (first, rest) = t.split_at(1);
-                    Spans::from(vec![
-                        Span::styled(
-                            first,
-                            Style::default()
-                                .fg(Color::Yellow)
-                                .add_modifier(Modifier::UNDERLINED),
-                        ),
-                        Span::styled(rest, Style::default().fg(Color::White)),
-                    ])
-                })
-                .collect();
-
-            let tabs = Tabs::new(menu)
-                .select(self.page.into())
-                .block(Block::default().title("Menu").borders(Borders::ALL))
-                .style(Style::default().fg(Color::White))
-                .highlight_style(Style::default().fg(Color::Yellow))
-                .divider(Span::raw("|"));
-
+            let tabs = self.get_header(vec!["Home", "Passwords List"]);
             rect.render_widget(tabs, chunks[0]);
             rect.render_widget(self.render_home(), chunks[1])
         })?;
@@ -60,6 +39,7 @@ impl PasswordManager {
         }
         Ok(Page::Quit)
     }
+
     fn render_home<'a>(&self) -> Paragraph<'a> {
         let home = Paragraph::new(vec![
             Spans::from(vec![Span::raw("")]),
@@ -68,11 +48,12 @@ impl PasswordManager {
             Spans::from(vec![Span::raw("to")]),
             Spans::from(vec![Span::raw("")]),
             Spans::from(vec![Span::styled(
-                "pet-CLI",
+                "The RustyBox Password Manager",
                 Style::default().fg(Color::LightBlue),
             )]),
             Spans::from(vec![Span::raw("")]),
-            Spans::from(vec![Span::raw("Press 'p' to access pets, 'a' to add random new pets and 'd' to delete the currently selected pet.")]),
+            Spans::from(vec![Span::raw("Press 'p' to access password list.")]),
+            Spans::from(vec![Span::raw("'q' to exit.")]),
         ])
         .alignment(Alignment::Center)
         .block(
