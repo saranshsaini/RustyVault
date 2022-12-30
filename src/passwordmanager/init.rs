@@ -46,7 +46,7 @@ impl PasswordManager {
                         }
                         // let raw_pw = page_res.input;
                         // let enc_login_pw = self.security.encrypt_login_pw(&page_res.input[..]);
-                        self.security.save_login_pw(&page_res.input[..]);
+                        self.db.save_login_pw(&page_res.input[..]);
                         return Ok(Page::Home);
                     }
                     _ => {}
@@ -87,17 +87,19 @@ impl PasswordManager {
         let proj_dirs = ProjectDirs::from("com", "RustyBoxTeam", "RustyBox")
             .expect("Could not access home folder from OS");
         let dir_path = proj_dirs.config_dir();
-        let file_path = dir_path.join("keys.json");
+        let keys_path = dir_path.join("keys.json");
+        let data_path = dir_path.join("data.json");
         if !dir_path.exists() {
             fs::create_dir(dir_path).expect("Can not create config folder");
-            fs::File::create(file_path).expect("Can not create files");
+        }
+        if !keys_path.exists() || !data_path.exists() {
+            fs::File::create(keys_path).expect("Can not create key file");
+            fs::File::create(data_path).expect("Can not create data file");
             return false;
         }
-        if !file_path.exists() {
-            fs::File::create(file_path).expect("Can not create files");
-            return false;
-        }
-        if fs::read_to_string(file_path).unwrap().is_empty() {
+        if fs::read_to_string(keys_path).unwrap().is_empty()
+        //|| fs::read_to_string(data_path).unwrap().is_empty()
+        {
             return false;
         }
         return true;

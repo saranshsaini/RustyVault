@@ -1,6 +1,5 @@
 [
   {
-    "id": 1,
     "site": "elgoog.com",
     "username": "hey1",
     "password": "potato123",
@@ -8,7 +7,6 @@
     "last_updated": "2022-12-28"
   },
   {
-    "id": 2,
     "site": "stuff.com",
     "username": "hey2",
     "password": "potato456",
@@ -16,7 +14,6 @@
     "last_updated": "2022-12-28"
   },
   {
-    "id": 3,
     "site": "ebutouy.com",
     "username": "hey3",
     "password": "potato789",

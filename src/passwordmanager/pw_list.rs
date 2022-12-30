@@ -1,5 +1,4 @@
 use super::{Input, InputResult, NavigationResult, Page, PasswordManager};
-use std::cmp;
 
 use crossterm::event::KeyCode;
 use tui::{
@@ -11,7 +10,7 @@ use tui::{
 };
 impl PasswordManager {
     pub fn pw_list_screen<T: tui::backend::Backend>(
-        &self,
+        &mut self,
         terminal: &mut Terminal<T>,
     ) -> NavigationResult {
         let mut pw_list_state = ListState::default();
@@ -37,7 +36,7 @@ impl PasswordManager {
                         "'enter' - show password. 'c' - copy to clipboard.",
                     )]),
                     Spans::from(vec![Span::raw(
-                        "'a' - add. 'e' - edit. 'd' - delete. 'h' - home",
+                        "'a' - add. 'e' - edit. 'd' - delete. 'h' - home. 'q' - quit",
                     )]),
                 ])
                 .style(Style::default().fg(Color::LightCyan))
@@ -74,6 +73,7 @@ impl PasswordManager {
                         break;
                     }
                     KeyCode::Char('h') => return Ok(Page::Home),
+                    KeyCode::Char('a') => return self.add_site(terminal),
                     KeyCode::Up => {
                         if self.db.pw_vec.is_empty() {
                             continue;
@@ -101,40 +101,23 @@ impl PasswordManager {
         }
         Ok(Page::Quit)
     }
-    fn render_pwlist<'a>(&self, pw_list_state: &mut ListState) -> (Table<'a>) {
-        // let pets = Block::default()
-        //     .borders(Borders::ALL)
-        //     .style(Style::default().fg(Color::White))
-        //     .title("Sites")
-        //     .border_type(BorderType::Plain);
-
+    fn render_pwlist<'a>(&self, pw_list_state: &mut ListState) -> Table<'a> {
         let pw_list = &self.db.pw_vec;
-        // if pw_list.is_empty(){
-        //     return Table::new(vec!)
-        // }
-
-        let pw_index = pw_list_state.selected().unwrap();
-        // pw_index = if pw_index >= pw_list.len() {
-        //     0
-        // } else {
-        //     pw_index
-        // };
-        // pw_list_state.select(Some(pw_index));
-
-        let selected_site_id = pw_list.get(pw_index).unwrap().id;
-
+        let selected_site_id = pw_list_state.selected().unwrap();
+        let mut curr_id = 0;
         let rows = pw_list.iter().map(|pw| {
-            let id_span = if selected_site_id == pw.id {
+            let id_span = if selected_site_id == curr_id {
                 Span::styled(
-                    pw.id.to_string(),
+                    curr_id.to_string(),
                     Style::default()
                         .fg(Color::White)
                         .bg(Color::Yellow)
                         .add_modifier(Modifier::BOLD),
                 )
             } else {
-                Span::raw(pw.id.to_string())
+                Span::raw(curr_id.to_string())
             };
+            curr_id += 1;
             Row::new(vec![
                 Cell::from(id_span),
                 Cell::from(Span::raw(pw.site.clone())),
@@ -147,7 +130,7 @@ impl PasswordManager {
         let pw_table = Table::new(rows)
             .header(Row::new(vec![
                 Cell::from(Span::styled(
-                    "ID",
+                    "#",
                     Style::default().add_modifier(Modifier::BOLD),
                 )),
                 Cell::from(Span::styled(

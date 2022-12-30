@@ -1,3 +1,2 @@
-mod db;
+mod databasemanager;
 mod passwordmanager;
-mod security;

@@ -68,6 +68,9 @@ impl PasswordManager {
                             input,
                         });
                     }
+                    KeyCode::Backspace => {
+                        input.pop();
+                    }
                     // KeyCode::Char('h') => return Ok(Page::Home),
                     // KeyCode::Char('p') => return Ok(Page::PasswordList),
                     KeyCode::Char(c) => {

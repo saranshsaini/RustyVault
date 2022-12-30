@@ -1,5 +1,5 @@
-use super::db::DataManager;
-use super::security::SecurityManager;
+use super::databasemanager::DatabaseManager;
+use argon2::{self, Config};
 use chrono::{DateTime, Local, NaiveDate, TimeZone};
 use crossterm::{
     event::{self, Event, KeyCode, KeyEvent},
@@ -27,8 +27,10 @@ use tui::{
     },
     Terminal,
 };
+use uuid::Uuid;
 mod home;
 mod init;
+mod list_functionality;
 mod pw_list;
 mod user_input;
 
@@ -36,7 +38,6 @@ type Error = Result<(), Box<dyn std::error::Error>>;
 type NavigationResult = Result<Page, Box<dyn std::error::Error>>;
 
 const TICK_RATE: Duration = Duration::from_millis(200);
-const DB_PATH: &'static str = "./data/db.json";
 
 #[derive(Copy, Clone, Debug)]
 pub enum Page {
@@ -75,18 +76,30 @@ pub struct PasswordManager {
     input_rx: mpsc::Receiver<Input<KeyEvent>>,
     input_thread_handle: thread::JoinHandle<()>,
     page: Page,
-    db: DataManager,
-    security: SecurityManager,
+    db: DatabaseManager,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct PasswordEntry {
-    id: u32,
+    uuid: Uuid,
     username: String,
     password: String,
     site: String,
     created: NaiveDate,
     last_updated: NaiveDate,
+}
+
+impl PasswordEntry {
+    pub fn new(site: String, username: String, enc_pw: String, uuid: Uuid) -> PasswordEntry {
+        PasswordEntry {
+            uuid,
+            username,
+            password: enc_pw,
+            site,
+            created: Local::now().date_naive(),
+            last_updated: Local::now().date_naive(),
+        }
+    }
 }
 
 impl PasswordManager {
@@ -96,14 +109,7 @@ impl PasswordManager {
             input_rx,
             input_thread_handle,
             page: Page::Initialize,
-            db: DataManager::new(DB_PATH),
-            security: SecurityManager::new(String::from(
-                ProjectDirs::from("com", "RustyBoxTeam", "RustyBox")
-                    .expect("Can't access directories")
-                    .config_dir()
-                    .to_str()
-                    .unwrap(),
-            )),
+            db: DatabaseManager::new(),
         }
     }
     pub fn show(&mut self) -> Error {
@@ -132,7 +138,7 @@ impl PasswordManager {
                         self.page = Page::Home;
                         continue;
                     }
-                    if !self.security.verify_login_pw(&page_res.input) {
+                    if !self.db.verify_login_pw(&page_res.input) {
                         message = "Incorrect Password. Try Again";
                         continue;
                     }

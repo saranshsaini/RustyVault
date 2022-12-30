@@ -1,7 +1,7 @@
 // use crate::passwordmanager::PasswordManager;
-mod db;
+
+mod databasemanager;
 mod passwordmanager;
-mod security;
 use argon2::{self, Config};
 use directories::{BaseDirs, ProjectDirs, UserDirs};
 use std::path::Path;
