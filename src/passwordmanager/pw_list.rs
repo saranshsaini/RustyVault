@@ -1,4 +1,4 @@
-use super::{Input, NavigationResult, Page, PageResult, PasswordManager};
+use super::{Input, InputResult, NavigationResult, Page, PasswordManager};
 use std::cmp;
 
 use crossterm::event::KeyCode;
@@ -13,12 +13,9 @@ impl PasswordManager {
     pub fn pw_list_screen<T: tui::backend::Backend>(
         &self,
         terminal: &mut Terminal<T>,
-        input: String,
     ) -> NavigationResult {
         let mut pw_list_state = ListState::default();
         pw_list_state.select(Some(0));
-        let mut selected = 0;
-
         loop {
             terminal.draw(|rect| {
                 let size = rect.size();
@@ -35,11 +32,16 @@ impl PasswordManager {
                     )
                     .split(size);
                 let tabs = self.get_header(vec!["Home", "Passwords List"]);
-                let instructions = Paragraph::new(
-                    "'enter' -  show password. 'c' - copy to clipboard. 'e' - edit. 'd' - delete.",
-                )
+                let instructions = Paragraph::new(vec![
+                    Spans::from(vec![Span::raw(
+                        "'enter' - show password. 'c' - copy to clipboard.",
+                    )]),
+                    Spans::from(vec![Span::raw(
+                        "'a' - add. 'e' - edit. 'd' - delete. 'h' - home",
+                    )]),
+                ])
                 .style(Style::default().fg(Color::LightCyan))
-                // .alignment(Alignment::Center)
+                .alignment(Alignment::Center)
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
@@ -48,10 +50,19 @@ impl PasswordManager {
                         .border_type(BorderType::Plain),
                 );
 
-                let pw_table = self.render_pwlist(&mut pw_list_state);
+                let empty_message = Paragraph::new(vec![
+                    Spans::from(vec![Span::raw("")]),
+                    Spans::from(vec![Span::raw("No Passwords")]),
+                ])
+                .alignment(Alignment::Center);
                 rect.render_widget(tabs, chunks[0]);
                 // rect.render_stateful_widget(left, pw_chunks[0], &mut pw_list_state);
-                rect.render_widget(pw_table, chunks[1]);
+                if self.db.pw_vec.is_empty() {
+                    rect.render_widget(empty_message, chunks[1]);
+                } else {
+                    let pw_table = self.render_pwlist(&mut pw_list_state);
+                    rect.render_widget(pw_table, chunks[1]);
+                }
                 rect.render_widget(instructions, chunks[2]);
 
                 // rect.render_widget(self.render_pwlist(&pw_list_state), chunks[1])
@@ -64,6 +75,9 @@ impl PasswordManager {
                     }
                     KeyCode::Char('h') => return Ok(Page::Home),
                     KeyCode::Up => {
+                        if self.db.pw_vec.is_empty() {
+                            continue;
+                        }
                         let prev = pw_list_state.selected().unwrap();
 
                         pw_list_state.select(Some(
@@ -71,6 +85,9 @@ impl PasswordManager {
                         ));
                     }
                     KeyCode::Down => {
+                        if self.db.pw_vec.is_empty() {
+                            continue;
+                        }
                         let prev = pw_list_state.selected().unwrap();
                         // pw_list_state.select(Some(cmp::min(self.db.pw_vec.len() - 1, prev + 1)));
                         pw_list_state.select(Some((prev + 1) % self.db.pw_vec.len()));
@@ -92,6 +109,9 @@ impl PasswordManager {
         //     .border_type(BorderType::Plain);
 
         let pw_list = &self.db.pw_vec;
+        // if pw_list.is_empty(){
+        //     return Table::new(vec!)
+        // }
 
         let pw_index = pw_list_state.selected().unwrap();
         // pw_index = if pw_index >= pw_list.len() {
@@ -143,7 +163,7 @@ impl PasswordManager {
                     Style::default().add_modifier(Modifier::BOLD),
                 )),
                 Cell::from(Span::styled(
-                    "Created At",
+                    "Created",
                     Style::default().add_modifier(Modifier::BOLD),
                 )),
                 Cell::from(Span::styled(

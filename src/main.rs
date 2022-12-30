@@ -1,13 +1,30 @@
 // use crate::passwordmanager::PasswordManager;
 mod db;
 mod passwordmanager;
+mod security;
+use argon2::{self, Config};
+use directories::{BaseDirs, ProjectDirs, UserDirs};
+use std::path::Path;
 // use rmp_serde as rmps;
 // use rmps::{Deserializer, Serializer};
 fn main() {
+    // let pw = "mypass123";
+    // let salt = "harcodedsalthatshouldprobablybechangedtosomethingelseatonepoint";
+    // let config = Config::default();
+    // let encoded = argon2::hash_encoded(pw.as_bytes(), salt.as_bytes(), &config).unwrap();
+    // let ans = argon2::verify_encoded(&encoded[..], pw.as_bytes()).unwrap();
+    // println!("ans: {}", ans);
     let mut pw = passwordmanager::PasswordManager::new();
     if let Err(e) = pw.show() {
         println!("error: {}", e);
     }
+    // if let Some(proj_dirs) = ProjectDirs::from("com", "ssaini", "RustyBox") {
+    //     let path = proj_dirs.config_dir();
+    //     println!("path: {:?}", path);
+    //     if path.exists() {
+    //         println!("path exists: {:?}", path);
+    //     }
+    // }
     // let pw1 = Password {
     //     username: String::from("billy"),
     //     password: String::from("123"),

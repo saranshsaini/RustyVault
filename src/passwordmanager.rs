@@ -1,5 +1,6 @@
 use super::db::DataManager;
-use chrono::{DateTime, Local, TimeZone};
+use super::security::SecurityManager;
+use chrono::{DateTime, Local, NaiveDate, TimeZone};
 use crossterm::{
     event::{self, Event, KeyCode, KeyEvent},
     execute,
@@ -7,6 +8,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
     ExecutableCommand,
 };
+use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc;
 use std::{
@@ -26,6 +28,7 @@ use tui::{
     Terminal,
 };
 mod home;
+mod init;
 mod pw_list;
 mod user_input;
 
@@ -40,6 +43,7 @@ pub enum Page {
     Quit,
     Home,
     PasswordList,
+    Initialize,
 }
 impl From<Page> for usize {
     fn from(input: Page) -> usize {
@@ -47,6 +51,7 @@ impl From<Page> for usize {
             Page::Home => 0,
             Page::PasswordList => 1,
             Page::Quit => 2,
+            Page::Initialize => 3,
         }
     }
 }
@@ -56,13 +61,13 @@ enum Input<T> {
     Noop,
 }
 
-pub struct PageResult {
+pub struct InputResult {
     page: Page,
     input: String,
 }
-impl PageResult {
-    pub fn new(page: Page, input: String) -> PageResult {
-        PageResult { page, input }
+impl InputResult {
+    pub fn new(page: Page, input: String) -> InputResult {
+        InputResult { page, input }
     }
 }
 
@@ -71,6 +76,7 @@ pub struct PasswordManager {
     input_thread_handle: thread::JoinHandle<()>,
     page: Page,
     db: DataManager,
+    security: SecurityManager,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -79,8 +85,8 @@ pub struct PasswordEntry {
     username: String,
     password: String,
     site: String,
-    created: DateTime<Local>,
-    last_updated: DateTime<Local>,
+    created: NaiveDate,
+    last_updated: NaiveDate,
 }
 
 impl PasswordManager {
@@ -89,8 +95,15 @@ impl PasswordManager {
         PasswordManager {
             input_rx,
             input_thread_handle,
-            page: Page::Home,
+            page: Page::Initialize,
             db: DataManager::new(DB_PATH),
+            security: SecurityManager::new(String::from(
+                ProjectDirs::from("com", "RustyBoxTeam", "RustyBox")
+                    .expect("Can't access directories")
+                    .config_dir()
+                    .to_str()
+                    .unwrap(),
+            )),
         }
     }
     pub fn show(&mut self) -> Error {
@@ -99,9 +112,12 @@ impl PasswordManager {
         let backend = CrosstermBackend::new(stdout);
         let mut terminal = Terminal::new(backend)?;
         terminal.clear()?;
+        let mut message = "Enter Password to See Passwords List";
         loop {
             match self.page {
+                Page::Initialize => self.page = self.init_screen(&mut terminal)?,
                 Page::Home => {
+                    message = "Enter Password to See Passwords List";
                     self.page = self.home_screen(&mut terminal)?;
                 }
                 Page::Quit => {
@@ -111,14 +127,17 @@ impl PasswordManager {
                 }
                 Page::PasswordList => {
                     // self.page = self.second_screen(&mut terminal)?;
-                    let page_res =
-                        self.user_input(&mut terminal, "Enter Password to See Passwords List")?;
+                    let page_res = self.user_input(&mut terminal, message)?;
                     if page_res.input.len() == 0 {
                         self.page = Page::Home;
                         continue;
                     }
+                    if !self.security.verify_login_pw(&page_res.input) {
+                        message = "Incorrect Password. Try Again";
+                        continue;
+                    }
                     self.page = Page::PasswordList;
-                    self.page = self.pw_list_screen(&mut terminal, page_res.input)?;
+                    self.page = self.pw_list_screen(&mut terminal)?;
                 }
             }
         }

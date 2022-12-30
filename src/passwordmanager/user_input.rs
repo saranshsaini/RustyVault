@@ -1,4 +1,4 @@
-use super::{Input, NavigationResult, Page, PageResult, PasswordManager};
+use super::{Input, InputResult, NavigationResult, Page, PasswordManager};
 use crossterm::event::KeyCode;
 use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -7,13 +7,13 @@ use tui::{
     widgets::{Block, BorderType, Borders, Paragraph, Tabs},
     Terminal,
 };
-type InputResult = Result<PageResult, Box<dyn std::error::Error>>;
+type PageResult = Result<InputResult, Box<dyn std::error::Error>>;
 impl PasswordManager {
     pub fn user_input<T: tui::backend::Backend>(
         &self,
         terminal: &mut Terminal<T>,
         header_message: &str,
-    ) -> InputResult {
+    ) -> PageResult {
         let mut input = String::new();
         loop {
             terminal.draw(|rect| {
@@ -54,7 +54,7 @@ impl PasswordManager {
             match self.input_rx.recv()? {
                 Input::Key(k) => match k.code {
                     KeyCode::Esc => {
-                        return Ok(PageResult {
+                        return Ok(InputResult {
                             page: Page::Home,
                             input: String::new(),
                         });
@@ -63,7 +63,7 @@ impl PasswordManager {
                         if input.len() == 0 {
                             continue;
                         }
-                        return Ok(PageResult {
+                        return Ok(InputResult {
                             page: Page::Home,
                             input,
                         });

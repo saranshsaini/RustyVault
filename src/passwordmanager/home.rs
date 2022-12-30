@@ -1,4 +1,4 @@
-use super::{Input, NavigationResult, Page, PageResult, PasswordManager};
+use super::{Input, InputResult, NavigationResult, Page, PasswordManager};
 use crossterm::event::KeyCode;
 use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
