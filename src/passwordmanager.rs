@@ -190,7 +190,7 @@ impl PasswordManager {
             .select(self.page.into())
             .block(
                 Block::default()
-                    .title("Rusty Box")
+                    .title("RustyVault")
                     .style(
                         Style::default().fg(Color::Green), // .add_modifier(Modifier::SLOW_BLINK),
                     )

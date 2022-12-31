@@ -26,7 +26,7 @@ struct KeyPair {
 
 impl DatabaseManager {
     pub fn new() -> DatabaseManager {
-        let projects_path = ProjectDirs::from("com", "RustyBoxTeam", "RustyBox")
+        let projects_path = ProjectDirs::from("com", "RustyVaultTeam", "RustyVault")
             .expect("Could not access home folder from OS");
         let mut dir_path = String::from(projects_path.config_dir().to_str().unwrap());
         let mut db_file = dir_path.clone();

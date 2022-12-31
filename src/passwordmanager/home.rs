@@ -48,7 +48,7 @@ impl PasswordManager {
             Spans::from(vec![Span::raw("to")]),
             Spans::from(vec![Span::raw("")]),
             Spans::from(vec![Span::styled(
-                "The RustyBox Password Manager",
+                "The RustyVault Password Manager",
                 Style::default().fg(Color::LightBlue),
             )]),
             Spans::from(vec![Span::raw("")]),

@@ -1,8 +1,8 @@
-# RustyBox
+# RustyVault
 
 ## _A simple password vault living in your terminal_
 
-RustyBox is a place to place your passwords for later use.
+RustyVault is a place to place your passwords for later use.
 
 ## Features
 
@@ -14,12 +14,12 @@ RustyBox is a place to place your passwords for later use.
 You can install it from crates.io
 
 ```sh
-cargo install rustybox
+cargo install RustyVault
 ```
 
 ## Development
 
-I am no security expert. Future updates should focus on making sure everything is as secure as possible.
+While everything is encrypted, I am no security expert. Future updates should focus on making sure everything is as secure as possible.
 
 Contributions are always welcome!
 

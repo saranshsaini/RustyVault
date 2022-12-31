@@ -56,14 +56,14 @@ impl PasswordManager {
         let home = Paragraph::new(vec![
             Spans::from(vec![Span::raw("")]),
             Spans::from(vec![Span::styled(
-                "The RustyBox Password Manager Initializer",
+                "The RustyVault Password Manager Initializer",
                 Style::default()
                     .fg(Color::Magenta)
                     .add_modifier(Modifier::BOLD),
             )]),
             Spans::from(vec![Span::raw("")]),
             Spans::from(vec![Span::raw(
-                "To begin using RustyBox, press 'enter' to create a password.",
+                "To begin using RustyVault, press 'enter' to create a password.",
             )]),
             Spans::from(vec![Span::raw("Don't forget it!.")]),
             Spans::from(vec![Span::raw("'q' to exit.")]),
