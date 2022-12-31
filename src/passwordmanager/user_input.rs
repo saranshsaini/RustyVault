@@ -1,10 +1,10 @@
-use super::{Input, InputResult, NavigationResult, Page, PasswordManager};
+use super::{Input, InputResult, Page, PasswordManager};
 use crossterm::event::KeyCode;
 use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
+    style::{Color, Style},
     text::{Span, Spans},
-    widgets::{Block, BorderType, Borders, Paragraph, Tabs},
+    widgets::{Block, BorderType, Borders, Paragraph},
     Terminal,
 };
 type PageResult = Result<InputResult, Box<dyn std::error::Error>>;
@@ -32,23 +32,9 @@ impl PasswordManager {
                             .style(Style::default().fg(Color::Red))
                             .border_type(BorderType::Plain),
                     );
-                // let top = vec![Spans::from(vec![Span::raw("STUFF")])];
-                // let tabs = Tabs::new(top)
-                //     // .select(self.page.into())
-                //     .block(
-                //         Block::default()
-                //             .title("RustyBox Input Required")
-                //             .borders(Borders::ALL),
-                //     )
-                //     .style(Style::default().fg(Color::White))
-                //     .highlight_style(Style::default().fg(Color::Yellow));
 
                 rect.render_widget(header, chunks[0]);
                 rect.render_widget(self.render_text_input(&input), chunks[1])
-                // match active_menu_item {
-                //     Page::Home => rect.render_widget(self.render_home(), chunks[1]),
-                //     Page::PasswordList => rect.render_widget(self.render_list(), chunks[1]),
-                // }
             })?;
 
             match self.input_rx.recv()? {
@@ -64,15 +50,13 @@ impl PasswordManager {
                             continue;
                         }
                         return Ok(InputResult {
-                            page: Page::Home,
+                            page: Page::PasswordList,
                             input,
                         });
                     }
                     KeyCode::Backspace => {
                         input.pop();
                     }
-                    // KeyCode::Char('h') => return Ok(Page::Home),
-                    // KeyCode::Char('p') => return Ok(Page::PasswordList),
                     KeyCode::Char(c) => {
                         input.push(c);
                     }
@@ -81,19 +65,13 @@ impl PasswordManager {
                 Input::Noop => {}
             }
         }
-        // Err()
     }
     fn render_text_input<'a>(&self, input: &'a String) -> Paragraph<'a> {
         let home = Paragraph::new(vec![
             Spans::from(vec![Span::raw("")]),
             Spans::from(vec![Span::raw("'esc' to go cancel.")]),
             Spans::from(vec![Span::raw("")]),
-            // Spans::from(vec![Span::styled(
-            //     "pet-CLI",
-            //     Style::default().fg(Color::LightBlue),
-            // )]),
             Spans::from(vec![Span::raw(input)]),
-            // Spans::from(vec![Span::raw("Press 'p' to access pets, 'a' to add random new pets and 'd' to delete the currently selected pet.")]),
         ])
         .alignment(Alignment::Center)
         .block(

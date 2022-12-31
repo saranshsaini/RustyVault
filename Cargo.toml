@@ -1,9 +1,12 @@
 [package]
-name = "terminalmenu"
+name = "RustyBox"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Saransh Saini <saranshs@berkeley.edu>"]
+description = "A simple gui password vault in your terminal. Encrypted and secure."
+keywords = ["terminal", "gui", "password_vault"]
+categories = ["command-line-utilities", "gui"]
+license = "MIT"
 
 [dependencies]
 crossterm = { version = "0.19", features = [ "serde" ] }

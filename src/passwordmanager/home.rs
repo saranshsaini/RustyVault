@@ -1,10 +1,10 @@
-use super::{Input, InputResult, NavigationResult, Page, PasswordManager};
+use super::{Input, NavigationResult, Page, PasswordManager};
 use crossterm::event::KeyCode;
 use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
+    style::{Color, Style},
     text::{Span, Spans},
-    widgets::{Block, BorderType, Borders, Paragraph, Tabs},
+    widgets::{Block, BorderType, Borders, Paragraph},
     Terminal,
 };
 

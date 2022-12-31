@@ -106,6 +106,7 @@ impl PasswordManager {
             match self.page {
                 Page::Initialize => self.page = self.init_screen(&mut terminal)?,
                 Page::Home => {
+                    authenticated = false;
                     message = "Enter Password to See Passwords List";
                     self.page = self.home_screen(&mut terminal)?;
                 }
@@ -117,7 +118,7 @@ impl PasswordManager {
                 Page::PasswordList => {
                     if !authenticated {
                         let page_res = self.user_input(&mut terminal, message)?;
-                        if page_res.input.len() == 0 {
+                        if let Page::Home = page_res.page {
                             self.page = Page::Home;
                             continue;
                         }

@@ -54,6 +54,7 @@ impl PasswordManager {
 
     fn render_init<'a>(&self) -> Paragraph<'a> {
         let home = Paragraph::new(vec![
+            Spans::from(vec![Span::raw("")]),
             Spans::from(vec![Span::styled(
                 "The RustyBox Password Manager Initializer",
                 Style::default()

@@ -1,13 +1,5 @@
-use super::{Input, InputResult, NavigationResult, Page, PasswordManager};
-
-use crossterm::event::KeyCode;
-use tui::{
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
-    text::{Span, Spans},
-    widgets::{Block, BorderType, Borders, Cell, List, ListItem, ListState, Paragraph, Row, Table},
-    Terminal,
-};
+use super::{NavigationResult, Page, PasswordManager};
+use tui::Terminal;
 
 impl PasswordManager {
     pub fn add_site<T: tui::backend::Backend>(
