@@ -133,6 +133,8 @@ impl PasswordManager {
                 }
             }
         }
+
+        disable_raw_mode()?;
         Ok(())
     }
 
