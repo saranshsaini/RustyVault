@@ -86,7 +86,7 @@ impl PasswordManager {
     fn render_text_input<'a>(&self, input: &'a String) -> Paragraph<'a> {
         let home = Paragraph::new(vec![
             Spans::from(vec![Span::raw("")]),
-            Spans::from(vec![Span::raw("esc to go back.")]),
+            Spans::from(vec![Span::raw("'esc' to go cancel.")]),
             Spans::from(vec![Span::raw("")]),
             // Spans::from(vec![Span::styled(
             //     "pet-CLI",

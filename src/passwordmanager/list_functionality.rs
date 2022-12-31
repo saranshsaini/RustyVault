@@ -54,7 +54,7 @@ impl PasswordManager {
                 confirm_password = String::new();
             }
         }
-        self.db.add_pw(sitename, username, password);
+        self.db.add_pw(sitename, username, password, &self.db_key);
         Ok(Page::PasswordList)
     }
 }

@@ -1,33 +1,22 @@
 use super::databasemanager::DatabaseManager;
-use argon2::{self, Config};
-use chrono::{DateTime, Local, NaiveDate, TimeZone};
+use chrono::{Local, NaiveDate};
 use crossterm::{
-    event::{self, Event, KeyCode, KeyEvent},
-    execute,
-    style::{Print, ResetColor, SetBackgroundColor, SetForegroundColor},
+    event::{self, Event, KeyEvent},
     terminal::{disable_raw_mode, enable_raw_mode},
-    ExecutableCommand,
 };
-use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::sync::mpsc;
 use std::{
-    fs, io,
-    io::{stdout, Write},
-    thread,
+    io, thread,
     time::{Duration, Instant},
 };
 use tui::{
     backend::CrosstermBackend,
-    layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Span, Spans},
-    widgets::{
-        Block, BorderType, Borders, Cell, List, ListItem, ListState, Paragraph, Row, Table, Tabs,
-    },
+    widgets::{Block, Borders, Tabs},
     Terminal,
 };
-use uuid::Uuid;
 mod home;
 mod init;
 mod list_functionality;
@@ -66,33 +55,26 @@ pub struct InputResult {
     page: Page,
     input: String,
 }
-impl InputResult {
-    pub fn new(page: Page, input: String) -> InputResult {
-        InputResult { page, input }
-    }
-}
 
 pub struct PasswordManager {
     input_rx: mpsc::Receiver<Input<KeyEvent>>,
-    input_thread_handle: thread::JoinHandle<()>,
     page: Page,
     db: DatabaseManager,
+    db_key: String,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct PasswordEntry {
-    uuid: Uuid,
     username: String,
-    password: String,
+    pub password: String,
     site: String,
     created: NaiveDate,
-    last_updated: NaiveDate,
+    pub last_updated: NaiveDate,
 }
 
 impl PasswordEntry {
-    pub fn new(site: String, username: String, enc_pw: String, uuid: Uuid) -> PasswordEntry {
+    pub fn new(site: String, username: String, enc_pw: String) -> PasswordEntry {
         PasswordEntry {
-            uuid,
             username,
             password: enc_pw,
             site,
@@ -104,12 +86,12 @@ impl PasswordEntry {
 
 impl PasswordManager {
     pub fn new() -> PasswordManager {
-        let (input_rx, input_thread_handle) = PasswordManager::start_input_thread();
+        let (input_rx, _) = PasswordManager::start_input_thread();
         PasswordManager {
             input_rx,
-            input_thread_handle,
             page: Page::Initialize,
             db: DatabaseManager::new(),
+            db_key: String::new(),
         }
     }
     pub fn show(&mut self) -> Error {
@@ -119,6 +101,7 @@ impl PasswordManager {
         let mut terminal = Terminal::new(backend)?;
         terminal.clear()?;
         let mut message = "Enter Password to See Passwords List";
+        let mut authenticated = false;
         loop {
             match self.page {
                 Page::Initialize => self.page = self.init_screen(&mut terminal)?,
@@ -132,17 +115,20 @@ impl PasswordManager {
                     break;
                 }
                 Page::PasswordList => {
-                    // self.page = self.second_screen(&mut terminal)?;
-                    let page_res = self.user_input(&mut terminal, message)?;
-                    if page_res.input.len() == 0 {
-                        self.page = Page::Home;
-                        continue;
+                    if !authenticated {
+                        let page_res = self.user_input(&mut terminal, message)?;
+                        if page_res.input.len() == 0 {
+                            self.page = Page::Home;
+                            continue;
+                        }
+                        if !self.db.verify_login_pw(&page_res.input) {
+                            message = "Incorrect Password. Try Again";
+                            continue;
+                        }
+                        self.db_key = self.db.get_db_key(&page_res.input);
+                        self.db.populate_data(&self.db_key);
                     }
-                    if !self.db.verify_login_pw(&page_res.input) {
-                        message = "Incorrect Password. Try Again";
-                        continue;
-                    }
-                    self.page = Page::PasswordList;
+                    authenticated = true;
                     self.page = self.pw_list_screen(&mut terminal)?;
                 }
             }
@@ -176,9 +162,11 @@ impl PasswordManager {
         });
         (receiver, handle)
     }
-    pub fn get_header<'a>(&self, menu_titles: Vec<&str>) -> Tabs {
+
+    //use parameter
+    pub fn get_header(&self, _: Vec<&str>) -> Tabs {
         let menu_titles = vec!["Home", "Passwords List"];
-        let menu_titles = menu_titles.clone();
+        // let menu_titles = menu_titles.clone();
         let menu = menu_titles
             .iter()
             .map(|t| {

@@ -1,12 +1,12 @@
-use super::{Input, InputResult, NavigationResult, Page, PasswordManager};
+use super::{Input, NavigationResult, Page, PasswordManager};
 use crossterm::event::KeyCode;
-use directories::ProjectDirs;
 use std::fs;
+use std::path::Path;
 use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Span, Spans},
-    widgets::{Block, BorderType, Borders, Paragraph, Tabs},
+    widgets::{Block, BorderType, Borders, Paragraph},
     Terminal,
 };
 
@@ -25,9 +25,6 @@ impl PasswordManager {
                 .margin(0)
                 .constraints([Constraint::Min(2)].as_ref())
                 .split(size);
-
-            // let tabs = self.get_header(vec!["Home", "Passwords List"]);
-            // rect.render_widget(tabs, chunks[0]);
             rect.render_widget(self.render_init(), chunks[0])
         })?;
         loop {
@@ -44,8 +41,6 @@ impl PasswordManager {
                         if page_res.input.len() < 5 {
                             return Ok(Page::Initialize);
                         }
-                        // let raw_pw = page_res.input;
-                        // let enc_login_pw = self.security.encrypt_login_pw(&page_res.input[..]);
                         self.db.save_login_pw(&page_res.input[..]);
                         return Ok(Page::Home);
                     }
@@ -84,11 +79,9 @@ impl PasswordManager {
     }
 
     fn is_initialized(&self) -> bool {
-        let proj_dirs = ProjectDirs::from("com", "RustyBoxTeam", "RustyBox")
-            .expect("Could not access home folder from OS");
-        let dir_path = proj_dirs.config_dir();
-        let keys_path = dir_path.join("keys.json");
-        let data_path = dir_path.join("data.json");
+        let data_path = Path::new(&self.db.db_file);
+        let keys_path = Path::new(&self.db.key_file);
+        let dir_path = data_path.parent().unwrap();
         if !dir_path.exists() {
             fs::create_dir(dir_path).expect("Can not create config folder");
         }
@@ -97,9 +90,8 @@ impl PasswordManager {
             fs::File::create(data_path).expect("Can not create data file");
             return false;
         }
-        if fs::read_to_string(keys_path).unwrap().is_empty()
-        //|| fs::read_to_string(data_path).unwrap().is_empty()
-        {
+        if fs::read_to_string(keys_path).unwrap().is_empty() {
+            fs::File::create(data_path).expect("Can not create data file");
             return false;
         }
         return true;

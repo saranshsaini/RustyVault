@@ -13,4 +13,7 @@ chrono = { version = "0.4", features = ["serde"] }
 tui = { version = "0.14", default-features = false, features = ['crossterm', 'serde'] }
 rust-argon2 = "1.0"
 directories = "4.0.1"
-uuid = { version = "1.2.2", features = ["v4", "serde"] }
+aes-gcm = "0.10.1"
+aes = "0.8.2"
+rand = "0.8.5"
+clipboard = "0.5.0"

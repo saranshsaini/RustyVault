@@ -1,2 +1,0 @@
-mod databasemanager;
-mod passwordmanager;
