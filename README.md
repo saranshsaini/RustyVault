@@ -1,6 +1,6 @@
 # RustyVault
 
-## _A gui password vault living in your terminal_
+## _A gui password manager living in your terminal_
 
 RustyVault is a place to place your passwords for later use.
 
