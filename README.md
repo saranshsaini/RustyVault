@@ -11,7 +11,15 @@ RustyVault is a place to place your passwords for later use.
 
 ## Installation
 
-You can install it from crates.io
+Using homebrew:
+
+```sh
+brew tap saranshsaini/rustyvault
+brew install rustyvault
+rustyvault
+```
+
+Using crates.
 
 ```sh
 cargo install RustyVault
