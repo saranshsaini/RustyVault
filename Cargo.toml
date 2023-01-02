@@ -5,8 +5,8 @@ edition = "2021"
 readme = "README.md"
 repository = "https://github.com/saranshsaini/RustyVault"
 authors = ["Saransh Saini <saranshs@berkeley.edu>"]
-description = "A simple gui password vault in your terminal. Encrypted and secure."
-keywords = ["terminal", "gui", "password_vault", "password-manager"]
+description = "A gui password manager in your terminal. Encrypted and secure."
+keywords = ["terminal", "gui", "password-vault", "password-manager"]
 categories = ["command-line-utilities", "gui"]
 license = "MIT"
 
