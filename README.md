@@ -1,6 +1,6 @@
 # RustyVault
 
-## _A simple password vault living in your terminal_
+## _A gui password vault living in your terminal_
 
 RustyVault is a place to place your passwords for later use.
 
@@ -8,6 +8,7 @@ RustyVault is a place to place your passwords for later use.
 
 - Fully encryped using argon2 and AES-GCM encryption
 - Add, delete, and edit passwords
+- Intuitive UI built with TUI and Crossterm
 
 ## Installation
 
